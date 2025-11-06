@@ -161,27 +161,32 @@ PersistentKeepalive = 25
 PublicKey = $(echo "$wireguard_json" | jq -r '.server_key')
 AllowedIPs = 0.0.0.0/0
 Endpoint = ${WG_SERVER_IP}:$(echo "$wireguard_json" | jq -r '.server_port')
-" > ${PIA_CONF_PATH} || exit 1
+" > "$PIA_CONF_PATH" || exit 1
 echo -e "${green}OK!${nc}"
 
+systemd-notify --ready
 
 if [[ $PIA_CONNECT == "true" ]]; then
   # Start the WireGuard interface.
   # If something failed, stop this script.
   # If you get DNS errors because you miss some packages,
   # just hardcode /etc/resolv.conf to "nameserver 10.0.0.242".
-  echo
-  echo "Trying to create the wireguard interface..."
-  wg-quick up pia || exit 1
-  echo
-  echo -e "${green}The WireGuard interface got created.${nc}
+  # echo
+  # echo "Trying to create the wireguard interface..."
+  # wg-quick up pia || exit 1
+  # echo
+  # echo -e "${green}The WireGuard interface got created.${nc}
 
-  At this point, internet should work via VPN.
+  # At this point, internet should work via VPN.
 
-  To disconnect the VPN, run:
+  # To disconnect the VPN, run:
 
-  --> ${green}wg-quick down pia${nc} <--
-  "
+  # --> ${green}wg-quick down pia${nc} <--
+  # "
+
+  echo "Waiting for vpnns to exist..."
+  until [ -d /var/netns/vpnns ]; do sleep 1; done
+  echo "vpnns exists! Moving on to port forwarding..."
 
   # This section will stop the script if PIA_PF is not set to "true".
   if [[ $PIA_PF != "true" ]]; then

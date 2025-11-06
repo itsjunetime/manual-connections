@@ -118,6 +118,38 @@ port=$(echo "$payload" | base64 -d | jq -r '.port')
 # 2 months is not enough for your setup, please open a ticket.
 expires_at=$(echo "$payload" | base64 -d | jq -r '.expires_at')
 
+update_port_resp="$(curl http://192.168.1.1:9091/transmission/rpc \
+  --json "{ \"method\": \"session-set\", \"arguments\": { \"peer-port\": $port }}" \
+  -D - \
+  -o /dev/null \
+  -sS)"
+update_port_code="$?"
+
+echo "update_port_resp is '$update_port_resp'"
+echo "code is $update_port_code"
+
+if [ "$update_port_code" -ne 0 ]
+then
+  sess="$(echo "$update_port_resp" | grep "X-Transmission-Session-Id" | tr -d ' ' | cut -d ':' -f2)"
+  echo "sess is '$sess'"
+
+  update_port_resp="$(curl http://192.168.1.1:9091/transmission/rpc \
+    --json "{ \"method\": \"session-set\", \"arguments\": { \"peer-port\": $port }}" \
+    --header "X-Transmission-Session-Id: $sess" \
+    -D - \
+    -o /dev/null \
+    -sS)"
+  update_port_code="$?"
+
+  if [ "$update_port_code" -ne 0 ]
+  then
+    echo "Port update try 2 failed: "
+    echo "$update_port_resp"
+    echo "Exiting to force retry..."
+    exit 1
+  fi
+fi
+
 echo -ne "
 Signature ${green}$signature${nc}
 Payload   ${green}$payload${nc}
@@ -151,6 +183,6 @@ while true; do
     echo -e Expires on'\t'"${red}$(date --date="$expires_at")${nc}"
     echo -e "\n${green}This script will need to remain active to use port forwarding, and will refresh every 15 minutes.${nc}\n"
 
-    # sleep 15 minutes
-    sleep 900
+    # sleep 14 minutes
+    sleep 840
 done
