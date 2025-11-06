@@ -84,7 +84,7 @@ fi
 if [[ -z $PAYLOAD_AND_SIGNATURE ]]; then
   echo
   echo -n "Getting new signature... "
-  payload_and_signature="$(curl -s -m 5 \
+  payload_and_signature="$(ip netns exec vpnns curl -s -m 5 \
     --connect-to "$PF_HOSTNAME::$PF_GATEWAY:" \
     --cacert "ca.rsa.4096.crt" \
     -G --data-urlencode "token=${PIA_TOKEN}" \
@@ -163,7 +163,7 @@ Trying to bind the port... "
 # alive. The servers have no mechanism to track your activity, so they
 # will just delete the port forwarding if you don't send keepalives.
 while true; do
-  bind_port_response="$(curl -Gs -m 5 \
+  bind_port_response="$(ip netns exec vpnns curl -Gs -m 5 \
     --connect-to "$PF_HOSTNAME::$PF_GATEWAY:" \
     --cacert "ca.rsa.4096.crt" \
     --data-urlencode "payload=${payload}" \
