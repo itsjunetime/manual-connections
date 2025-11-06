@@ -186,7 +186,7 @@ if [[ $PIA_CONNECT == "true" ]]; then
   # "
 
   echo "Waiting for vpnns to exist..."
-  until [ -d /var/netns/vpnns ]; do sleep 1; done
+  until [ -d /run/netns/vpnns ]; do sleep 1; done
   echo "vpnns exists! Moving on to port forwarding..."
 
   # This section will stop the script if PIA_PF is not set to "true".
