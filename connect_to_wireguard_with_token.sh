@@ -162,6 +162,7 @@ PublicKey = $(echo "$wireguard_json" | jq -r '.server_key')
 AllowedIPs = 0.0.0.0/0
 Endpoint = ${WG_SERVER_IP}:$(echo "$wireguard_json" | jq -r '.server_port')
 " > "$PIA_CONF_PATH" || exit 1
+chmod 400 "$PIA_CONF_PATH"
 echo -e "${green}OK!${nc}"
 
 systemd-notify --ready
